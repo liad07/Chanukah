@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חנוכיה</title>
+
+    <style>
+        /* סגנון לחנוכיה */
+        .chanukiah {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 300px;
+            position: relative; /* Added for positioning the base */
+        }
+
+        .candle {
+            width: 20px;
+            height: 150px;
+            background-color: #ffd700;
+            border-radius: 5px;
+            position: relative;
+            margin-bottom: 10px;
+            display: none;
+
+        }
+
+        .beadle {
+            width: 20px;
+            height: 200px;
+            background-color: #ffd700;
+            border-radius: 5px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .flame {
+            width: 15px;
+            height: 25px;
+            background-color: #ff4500;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .base {
+            width: 1650px;
+            height: 20px;
+            background-color: #8b4513; /* חום */
+            border-radius: 10px 10px 0 0;
+            position: absolute; /* Added for positioning the base */
+            bottom: 0; /* Added for positioning the base */
+            left: 50%; /* Added for positioning the base */
+            transform: translateX(-50%); /* Added for positioning the base */
+        }
+
+        .candelactive {
+            width: 20px;
+            height: 150px;
+            background-color: #ffd700;
+            border-radius: 5px;
+            position: relative;
+            margin-bottom: 10px;
+            display: block !important;
+        }
+
+        .beadleactive {
+            width: 20px;
+            height: 200px;
+            background-color: #ffd700;
+            border-radius: 5px;
+            position: relative;
+            margin-bottom: 10px;
+            display: block !important;
+        }
+    </style>
+</head>
+<body dir="rtl" style="background-color: black">
+
+<div class="chanukiah">
+
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+
+    <div class="candle beadle">
+        <div class="flame"></div>
+    </div>
+
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="candle">
+        <div class="flame"></div>
+    </div>
+    <div class="base"></div>
+
+</div>
+<script>
+    //https://www.hebcal.com/converter?gd=13&gm=12&gy=2023&g2h=1&cfg=json
+    //Chanukah day 6
+    async function getregion() {
+        const Ipapi_resp = await fetch('https://ipapi.co/json/');
+        const clienInfo = await Ipapi_resp.json();
+        return clienInfo.region;
+    }
+
+    async function getsunset(clienInfo) {
+        const hebcal_resp = await fetch(`https://www.hebcal.com/zmanim?cfg=json&city=${clienInfo}&b=40&M=on`)
+        const chabatInfo = await hebcal_resp.json();
+        return chabatInfo.times.sunset;
+    }
+
+    function getcurrentdate(sunset) {
+        const targetTimestamp = new Date(sunset);
+        const currentTimestamp = new Date();
+
+        if (currentTimestamp > targetTimestamp) {
+            const tomorrowTimestamp = new Date(currentTimestamp);
+            tomorrowTimestamp.setDate(currentTimestamp.getDate() + 1);
+
+            const tomorrowDate = tomorrowTimestamp.toISOString().split('T')[0];
+        } else {
+            tomorrowDate = currentTimestamp.toISOString().split('T')[0];
+        }
+        return tomorrowDate
+    }
+
+    async function docandelbydate(date) {
+        var date1 = new Date(date)
+        var month = date1.getMonth() + 1; // Note: Months are zero-indexed, so adding 1 to get the correct month
+        var day = date1.getDate();
+        var year = date1.getFullYear();
+        console.log(month + "_" + day + "_" + year)
+        const hebcal_resp = await fetch(`https://www.hebcal.com/converter?gd=${day}&gm=${month}&gy=${year}&g2h=1&cfg=json`)
+        const res = await hebcal_resp.json();
+        var events = (res.events)
+        var hanukadayvalue = ""
+        events.forEach((item, index) => {
+            if (item.includes("Chanukah")) {
+                hanukadayvalue = item
+            }
+        })
+        var days = parseInt((hanukadayvalue.split("day")[1].trim()))
+        var candels = document.getElementsByClassName("candle")
+        var beadle = document.getElementsByClassName("beadle")
+
+        for (var i = 0; days > i; i++) {
+            console.log(i)
+            candels[i].classList.remove("candel")
+            candels[i].classList.add("candelactive")
+        }
+        beadle[0].classList.remove("candel")
+        beadle[0].classList.add("beadleactive")
+    }
+
+    var region1 = ""
+    var sunset1 = ""
+    getregion().then(region => {
+        region1 = (region);
+        console.log(region1)
+        getsunset(region1).then(sunset => {
+            sunset1 = sunset
+        });
+        var currentdate = getcurrentdate(sunset1)
+        console.log(currentdate)
+        docandelbydate(currentdate)
+    });
+
+
+</script>
+</body>
+</html>
