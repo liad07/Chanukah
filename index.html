@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>חנוכייה</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<center>
+    <br>
+    <br>
+    <h1 id="demo4"></h1>
+    <h1 id="demo2"></h1>
+    <img id="icon" src="images/unknown.png">
+    <h1 id="demo"></h1>
+    <h1 id="demo3"></h1>
+
+</center>
+<script>
+    //https://www.hebcal.com/converter?gd=13&gm=12&gy=2023&g2h=1&cfg=json
+    //Chanukah day 6
+    async function getregion() {
+        const Ipapi_resp = await fetch('https://ipapi.co/json/');
+        const clienInfo = await Ipapi_resp.json();
+        return clienInfo.region;
+    }
+
+    async function getsunset(clienInfo) {
+        const hebcal_resp = await fetch(`https://www.hebcal.com/zmanim?cfg=json&city=${clienInfo}&b=40&M=on`)
+        const chabatInfo = await hebcal_resp.json();
+        return chabatInfo.times.sunset;
+    }
+
+    function getcurrentdate(sunset) {
+
+        var tomorrowDate = ""
+        const targetTimestamp = new Date(sunset);
+        const currentTimestamp = new Date();
+
+        if (!currentTimestamp.getTime() < targetTimestamp.getTime()) {
+            const tomorrowTimestamp = new Date(currentTimestamp);
+            tomorrowTimestamp.setDate(currentTimestamp.getDate() + 1);
+            tomorrowDate = tomorrowTimestamp.toISOString().split('T')[0];
+
+        } else {
+            tomorrowDate = currentTimestamp.toISOString().split('T')[0];
+
+        }
+        return tomorrowDate
+    }
+
+    async function docandelbydate(date) {
+        var date1 = new Date(date)
+        var month = date1.getMonth() + 1; // Note: Months are zero-indexed, so adding 1 to get the correct month
+        var day = date1.getDate();
+        var year = date1.getFullYear();
+        const hebcal_resp = await fetch(`https://www.hebcal.com/converter?gd=${day}&gm=${month}&gy=${year}&g2h=1&cfg=json`)
+        const res = await hebcal_resp.json();
+        var events = (res.events)
+        var hanukadayvalue = ""
+        events.forEach((item, index) => {
+            if (item.includes("Chanukah")) {
+                hanukadayvalue = item
+                document.getElementById("demo4").textContent="חג שמח"
+
+            }
+
+        })
+        var days = parseInt((hanukadayvalue.split("day")[1].trim()))
+        var day2=""
+       document.getElementById("icon").src="images/hanuka"+days+".png"
+        if(days==1){
+            day2="נר ראשון"
+        }else if(days==2){
+            day2="נר שני"
+        }else if(days==3){
+            day2="נר שלישי"
+        }else if(days==4){
+            day2="נר רביעי"
+        }else if(days==5){
+            day2="נר חמישי"
+        }else if(days==6){
+            day2="נר שישי"
+        }else if(days==7){
+            day2="נר שביעי"
+        }else if(days==8){
+            day2="נר שמיני"
+        }
+        document.getElementById("demo3").textContent=day2
+    }
+
+    var region1 = ""
+    var sunset1 = ""
+    getregion().then(region => {
+        region1 = (region);
+        document.getElementById("demo2").textContent=region1;
+        getsunset(region1).then(sunset => {
+            sunset1 = sunset
+            var sunset2=new Date(sunset1)
+            document.getElementById("demo").textContent=sunset2.getHours()+":"+sunset2.getMinutes()
+
+            var currentdate = getcurrentdate(sunset1)
+            console.log(currentdate)
+            docandelbydate(currentdate)
+        });
+
+    });
+
+
+</script>
+</body>
+</html>
